@@ -1,0 +1,135 @@
+<?php 
+
+// DB credentials.
+define('DB_HOST','localhost');
+define('DB_USER','root');
+define('DB_PASS','');
+define('DB_NAME','tblusers');
+
+
+// Establish database connection.
+try
+{
+	$dbh = new PDO("mysql:host=".DB_HOST.";dbname=".DB_NAME,DB_USER, DB_PASS);
+}
+catch (PDOException $e)
+{
+	exit("Error: " . $e->getMessage());
+}
+
+
+--------------------------------------------------------------
+//Display data
+$sql = "SELECT * from tblusers";
+
+//Prepare the query:
+$query = $dbh->prepare($sql);
+
+//Execute the query:
+$query->execute();
+
+//Assign the data which you pulled from the database (in the preceding step) to a variable.
+$results=$query->fetchAll(PDO::FETCH_OBJ);
+
+if($query->rowCount() > 0)
+{
+	//data exist
+}
+
+//we can echo the records within a foreach loop:
+foreach($results as $result)
+{ 
+	echo $result->FirstName.'<br>';
+	echo $result->LastName.'<br>';
+}
+
+--------------------------------------------------------------
+//Add data
+// Posted Values  
+$fname=$_POST['firstname'];
+$lname=$_POST['lastname'];
+$emailid=$_POST['emailid'];
+$contactno=$_POST['contactno'];
+$address=$_POST['address'];
+
+// Query for Insertion
+$sql="INSERT INTO tblusers(FirstName,LastName,EmailId,ContactNumber,Address) VALUES(:fn,:ln,:eml,:cno,:adrss)";
+
+//Prepare Query for Execution
+$query = $dbh->prepare($sql);
+
+// Bind the parameters
+$query->bindParam(':fn',$fname,PDO::PARAM_STR);
+$query->bindParam(':ln',$lname,PDO::PARAM_STR);
+$query->bindParam(':eml',$emailid,PDO::PARAM_STR);
+$query->bindParam(':cno',$contactno,PDO::PARAM_STR);
+$query->bindParam(':adrss',$address,PDO::PARAM_STR);
+
+// Query Execution
+$query->execute();
+
+// Check that the insertion really worked. If the last inserted id is greater than zero, the insertion worked.
+$lastInsertId = $dbh->lastInsertId();
+if($lastInsertId)
+{
+	// Message for successfull insertion
+	echo "Record inserted successfully";
+}
+else 
+{
+	// Message for unsuccessfull insertion
+	echo "Something went wrong. Please try again"; 
+}
+
+--------------------------------------------------------------
+//Update data
+// Get the userid
+$userid=intval($_GET['id']);
+
+// Posted Values  
+$fname=$_POST['firstname'];
+$lname=$_POST['lastname'];
+$emailid=$_POST['emailid'];
+$contactno=$_POST['contactno'];
+$address=$_POST['address'];
+
+// Query for Query for Updation
+$sql="update tblusers set FirstName=:fn,LastName=:ln,EmailId=:eml,ContactNumber=:cno,Address=:adrss where id=:uid";
+
+//Prepare Query for Execution
+$query = $dbh->prepare($sql);
+
+// Bind the parameters
+$query->bindParam(':fn',$fname,PDO::PARAM_STR);
+$query->bindParam(':ln',$lname,PDO::PARAM_STR);
+$query->bindParam(':eml',$emailid,PDO::PARAM_STR);
+$query->bindParam(':cno',$contactno,PDO::PARAM_STR);
+$query->bindParam(':adrss',$address,PDO::PARAM_STR);
+$query->bindParam(':uid',$userid,PDO::PARAM_STR);
+
+// Query Execution
+$query->execute();
+
+// Mesage after updation
+echo "Record Updated successfully";
+
+
+--------------------------------------------------------------
+//Delete data
+//Get row id
+$uid=intval($_GET['del']);
+
+//Qyery for deletion
+$sql = "delete from tblusers WHERE  id=:id";
+
+// Prepare query for execution
+$query = $dbh->prepare($sql);
+
+// bind the parameters
+$query-> bindParam(':id',$uid, PDO::PARAM_STR);
+
+// Query Execution
+$query -> execute();
+
+// Mesage after updation
+echo "Record Updated successfully";
